@@ -24,15 +24,24 @@ jobs:
   generate-video:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    permissions:
+      contents: read
+      actions: read
     
     steps:
     - name: 📥 Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: 🐍 Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+    
+    - name: 💾 Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
     
     - name: 📦 Install system dependencies
       run: |
@@ -74,8 +83,17 @@ jobs:
         "
     
     - name: 📤 Upload Video
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: waifu-video
         path: generated_video.mp4
         retention-days: 7
+        compression-level: 6
+    
+    - name: 📸 Upload Preview Images
+      uses: actions/upload-artifact@v4
+      with:
+        name: preview-images
+        path: output/*.png
+        retention-days: 7
+        if-no-files-found: ignore
