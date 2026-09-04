@@ -2,11 +2,14 @@
 
 AI-powered YouTube Shorts generator menggunakan WaifuDiffusion.
 
-## ✨ Fitur
-- Generate gambar anime otomatis
-- Text-to-Speech Bahasa Indonesia
-- Auto video editing
-- Overlay teks otomatis
+## ✨ Fitur Utama
+- 🎨 Auto-generate anime images
+- 🔊 Text-to-Speech Bahasa Indonesia
+- 🎬 Auto video editing
+- 📝 Overlay teks otomatis
+- 🚀 Batch processing
+- 🐳 Docker support
+- ⚡ GitHub Actions
 
 ## 🛠️ Installation
 ```bash
@@ -23,3 +26,6 @@ from waifu_short_generator import WaifuShortGenerator
 generator = WaifuShortGenerator()
 generator.create_short(script="Cerita kamu...", character_prompt="1girl, anime")
 ```
+
+## 📝 License
+MIT License

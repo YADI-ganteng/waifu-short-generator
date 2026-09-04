@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  waifu-generator:
+    build: .
+    container_name: waifu-short-generator
+    volumes:
+      - ./output:/app/output
+      - ./models:/app/models
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    command: python waifu_short_generator.py
