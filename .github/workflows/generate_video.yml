@@ -1,4 +1,4 @@
-name: 🎬 Generate Video 360p
+name: 🎬 Generate Rain Effect Video
 
 on:
   push:
@@ -7,27 +7,37 @@ on:
       - 'stories/**'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   generate-video:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+    
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg
         pip install -r requirements.txt
+    
     - name: Generate Video
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: python video_generator.py
-    - name: Upload Videos
+    
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: video-parts-360p
+        name: rain-videos
         path: output/*.mp4
         retention-days: 7
