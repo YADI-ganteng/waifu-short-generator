@@ -1,99 +1,33 @@
-name: 🎌 Generate Waifu Short Video
+name: 🎬 Generate Video 360p
 
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'stories/**'
   workflow_dispatch:
-    inputs:
-      script:
-        description: 'Script cerita untuk video'
-        required: false
-        default: 'Di dunia paralel, seorang gadis menemukan kekuatan tersembunyi.'
-      character_prompt:
-        description: 'Prompt karakter anime'
-        required: false
-        default: '1girl, silver hair, blue eyes, magical girl'
-      style:
-        description: 'Style anime'
-        required: false
-        default: 'fantasy, epic'
-  schedule:
-    - cron: '0 0 * * *'
 
 jobs:
   generate-video:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
-    permissions:
-      contents: read
-      actions: read
-    
+    timeout-minutes: 30
     steps:
-    - name: 📥 Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
-    
-    - name: 🐍 Setup Python
+    - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    
-    - name: 💾 Cache pip packages
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-    
-    - name: 📦 Install system dependencies
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg
-        sudo apt-get install -y fonts-dejavu-core
-    
-    - name: 🔧 Install Python dependencies
-      run: |
-        pip install --upgrade pip
-        pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-        pip install diffusers transformers accelerate safetensors
-        pip install pillow moviepy gTTS numpy
-    
-    - name: 📥 Download WaifuDiffusion Model
-      run: |
-        python download_model.py
-    
-    - name: 🎨 Generate Video
-      run: |
-        python -c "
-        from waifu_short_generator import WaifuShortGenerator
-        
-        script = 'Di dunia paralel, seorang gadis menemukan kekuatan tersembunyi.'
-        character = '1girl, silver hair, blue eyes, magical girl'
-        style = 'fantasy, epic'
-        
-        generator = WaifuShortGenerator(device='cpu')
-        video_path = generator.create_short(
-            script=script,
-            character_prompt=character,
-            style=style,
-            filename='generated_video.mp4'
-        )
-        
-        import shutil
-        shutil.copy(video_path, 'generated_video.mp4')
-        print(f'Video generated: {video_path}')
-        "
-    
-    - name: 📤 Upload Video
+        pip install -r requirements.txt
+    - name: Generate Video
+      run: python video_generator.py
+    - name: Upload Videos
       uses: actions/upload-artifact@v4
       with:
-        name: waifu-video
-        path: generated_video.mp4
+        name: video-parts-360p
+        path: output/*.mp4
         retention-days: 7
-        compression-level: 6
-    
-    - name: 📸 Upload Preview Images
-      uses: actions/upload-artifact@v4
-      with:
-        name: preview-images
-        path: output/*.png
-        retention-days: 7
-        if-no-files-found: ignore
