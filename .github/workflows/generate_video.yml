@@ -1,19 +1,17 @@
-name: 🎬 Generate YT Shorts
+name: 🎮 Generate Larva Video
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'stories/**'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  generate-shorts:
+  generate-video:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
     
     steps:
     - name: Checkout
@@ -28,14 +26,17 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg
-        pip install -r requirements.txt
+        pip install pillow gTTS numpy
+        pip install "moviepy>=2.0.0"
+        pip install imageio imageio-ffmpeg
     
-    - name: Generate YT Shorts
-      run: python video_generator.py
+    - name: Generate Video
+      run: |
+        python video_generator.py
     
-    - name: Upload YT Shorts
+    - name: Upload Video
       uses: actions/upload-artifact@v4
       with:
-        name: yt-shorts
+        name: larva-video
         path: output/*.mp4
         retention-days: 7
