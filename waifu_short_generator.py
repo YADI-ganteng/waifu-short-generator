@@ -1,7 +1,7 @@
 """
 🎌 Waifu Short Generator
 AI YouTube Shorts Generator dengan WaifuDiffusion
-Fixed untuk MoviePy 2.0+
+Fixed untuk MoviePy 2.0+ API
 """
 
 import torch
@@ -13,11 +13,13 @@ import os
 import logging
 from datetime import datetime
 
-# Fixed moviepy import untuk versi 2.0+
+# MoviePy import dengan fallback
 try:
-    from moviepy import VideoFileClip, AudioFileClip, ImageClip, concatenate_videoclips, CompositeVideoClip
+    from moviepy import AudioFileClip, ImageClip, concatenate_videoclips
+    MOVIEPY_V2 = True
 except ImportError:
-    from moviepy.editor import VideoFileClip, AudioFileClip, ImageClip, concatenate_videoclips, CompositeVideoClip
+    from moviepy.editor import AudioFileClip, ImageClip, concatenate_videoclips
+    MOVIEPY_V2 = False
 
 from gtts import gTTS
 
@@ -38,10 +40,11 @@ class WaifuShortGenerator:
         
         logger.info(f"Loading model from {model_path}")
         logger.info(f"Device: {self.device}")
+        logger.info(f"MoviePy v2: {MOVIEPY_V2}")
         
         self.pipe = StableDiffusionPipeline.from_pretrained(
             model_path,
-            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+            dtype=torch.float16 if self.device == "cuda" else torch.float32,
             safety_checker=None,
             local_files_only=True
         )
@@ -156,12 +159,23 @@ class WaifuShortGenerator:
         scene_duration = duration / num_scenes
         
         for img in images:
-            clip = ImageClip(np.array(img)).set_duration(scene_duration)
-            clip = clip.resize(lambda t: 1 + 0.15*t)
+            clip = ImageClip(np.array(img))
+            
+            if MOVIEPY_V2:
+                clip = clip.with_duration(scene_duration)
+                clip = clip.resized(lambda t: 1 + 0.15*t)
+            else:
+                clip = clip.set_duration(scene_duration)
+                clip = clip.resize(lambda t: 1 + 0.15*t)
+            
             clips.append(clip)
         
         video = concatenate_videoclips(clips, method="compose")
-        video = video.set_audio(audio_clip)
+        
+        if MOVIEPY_V2:
+            video = video.with_audio(audio_clip)
+        else:
+            video = video.set_audio(audio_clip)
         
         if not filename:
             filename = f"waifu_short_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
