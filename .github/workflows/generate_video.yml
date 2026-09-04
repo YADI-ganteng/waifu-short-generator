@@ -3,6 +3,8 @@ name: 🎮 Generate Larva Video
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'larva_assets/**'
   workflow_dispatch:
 
 permissions:

@@ -1,6 +1,6 @@
 """
-🎮 Video Generator - Larva Assets
-Menggunakan gambar dari hasil extract
+🎮 Larva Video Generator
+Menggunakan assets dari larva_assets/
 """
 
 import os
@@ -22,37 +22,29 @@ class LarvaVideoGenerator:
         self.load_images()
     
     def load_images(self):
-        """Load semua gambar"""
         self.images = []
-        
         if os.path.exists(self.assets_folder):
             for root, dirs, files in os.walk(self.assets_folder):
                 for file in files:
                     if file.endswith(('.png', '.jpg', '.jpeg')):
                         self.images.append(os.path.join(root, file))
-        
         print(f"✅ {len(self.images)} images loaded")
     
     def create_background(self, frame_num=0):
-        """Background"""
         img = Image.new("RGB", (self.width, self.height), (20, 20, 40))
         draw = ImageDraw.Draw(img)
-        
         for y in range(self.height):
             factor = y / self.height
             r = int(20 * (1 - factor * 0.5))
             g = int(20 * (1 - factor * 0.5))
             b = int(40 * (1 - factor * 0.5))
             draw.line([(0, y), (self.width, y)], fill=(r, g, b))
-        
         return img
     
     def add_sprite(self, background, frame_num=0):
-        """Tambah sprite animasi"""
         if not self.images:
             return background
         
-        # Animasi loop - ganti gambar setiap 3 frame
         idx = (frame_num // 3) % len(self.images)
         sprite_path = self.images[idx]
         
@@ -60,17 +52,15 @@ class LarvaVideoGenerator:
             sprite = Image.open(sprite_path)
             sprite = sprite.convert("RGBA")
             
-            # Resize
-            max_width = int(self.width * 0.7)
-            max_height = int(self.height * 0.5)
+            max_width = int(self.width * 0.8)
+            max_height = int(self.height * 0.6)
             ratio = min(max_width / sprite.width, max_height / sprite.height)
             new_w = int(sprite.width * ratio)
             new_h = int(sprite.height * ratio)
             sprite = sprite.resize((new_w, new_h), Image.LANCZOS)
             
-            # Posisi tengah bawah
             x = (self.width - new_w) // 2
-            y = self.height - new_h - 200
+            y = self.height - new_h - 150
             
             background.paste(sprite, (x, y), sprite)
         except:
@@ -79,7 +69,6 @@ class LarvaVideoGenerator:
         return background
     
     def add_watermark(self, image):
-        """Watermark"""
         draw = ImageDraw.Draw(image)
         try:
             font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
@@ -95,10 +84,8 @@ class LarvaVideoGenerator:
         return image
     
     def generate_video(self, duration=10):
-        """Generate video"""
         fps = 30
         total_frames = int(duration * fps)
-        
         print(f"🎨 {total_frames} frames...")
         
         frames = []
@@ -117,7 +104,6 @@ class LarvaVideoGenerator:
         os.makedirs("output", exist_ok=True)
         output = "output/larva_video.mp4"
         video.write_videofile(output, fps=fps, codec="libx264", audio_codec="aac", bitrate="2500k")
-        
         video.close()
         return output
 
